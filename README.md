@@ -27,7 +27,7 @@
 1. Clone este repositório:
 
 ```
-git clone https://github.com/seuusuario/vulnscannerpro.git
+git clone https://github.com/maidenzinho/vulnscannerpro.git
 cd vulnscannerpro
 ```
 ### Edite o arquivo Dockerfile para definir uma senha segura para o Metasploit RPC:
