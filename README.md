@@ -1,50 +1,67 @@
-# Dockerfile para produção
+# VulnScanner Pro
 
-FROM kalilinux/kali-rolling
+**VulnScanner Pro** é uma ferramenta robusta para detectar vulnerabilidades em redes corporativas. Ela integra varredura de rede com Nmap, testes de exploits automatizados via Metasploit Framework, e roda em ambiente Docker para facilitar a implantação e uso em produção.
 
-# Atualiza o sistema e instala dependências essenciais
+---
+
+## Funcionalidades
+
+- Varredura de portas, serviços e sistemas operacionais com Nmap.
+- Testes automatizados de exploits via Metasploit RPC.
+- Geração de relatórios detalhados e logs estruturados.
+- Ambiente isolado e configurado via Docker.
+- Comentários e mensagens em português para facilitar o uso.
+
+---
+
+## Pré-requisitos
+
+- Docker instalado na máquina host (https://docs.docker.com/get-docker/)
+- Conhecimento básico em redes e segurança da informação.
+- Permissão para realizar testes de segurança nos alvos (uso autorizado).
+
+---
+
+## Instalação
+
+1. Clone este repositório:
+
 ```
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip nmap metasploit-framework \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+git clone https://github.com/seuusuario/vulnscannerpro.git
+cd vulnscannerpro
 ```
-# Instala bibliotecas Python necessárias
+### Edite o arquivo Dockerfile para definir uma senha segura para o Metasploit RPC:
+
+### dockerfile
 ```
-RUN pip3 install --no-cache-dir python-nmap metasploit.msfrpc
+ENV MSF_PASSWORD=senha_forte_aqui
 ```
-# Copia o script para dentro do container
-```
-COPY vulnscanner.py /opt/vulnscanner.py
-```
-# Define a senha do Metasploit RPC via variável de ambiente para segurança
-```
-ENV MSF_PASSWORD=your_secure_password_here
-```
-# Exponha a porta do Metasploit RPC
-```
-EXPOSE 55553
-```
-# Comando para iniciar o Metasploit RPC e depois o script Python
-```
-CMD msfrpcd -P $MSF_PASSWORD -S -a 0.0.0.0 -p 55553 & \
-    sleep 10 && \
-    python3 /opt/vulnscanner.py
-```
-### Instruções para produção
-```
-    Altere your_secure_password_here no Dockerfile para uma senha forte.
-```
-### Construa a imagem:
+### Construa a imagem Docker:
 ```
 docker build -t vulnscannerpro:prod .
 ```
-### Rode o container, mapeando a porta 55553 para o host:
+# Uso
+
+### Execute o container Docker mapeando a porta do Metasploit RPC e um volume para persistência dos logs e relatórios:
 ```
-docker run -it --rm -p 55553:55553 vulnscannerpro:prod
+docker run -it --rm -p 55553:55553 -v $(pwd)/output:/opt vulnscannerpro:prod
+```
+- -p 55553:55553 expõe a porta do Metasploit RPC.
+- -v $(pwd)/output:/opt monta a pasta local output para salvar logs e relatórios.
+
+### Ao iniciar, o script solicitará:
+- IP ou range alvo: informe o endereço IP ou faixa de rede para varredura.
+- Senha do Metasploit RPC: informe a mesma senha configurada no Dockerfile.
+  
+### Estrutura do Projeto
+```
+vulnscannerpro/
+├── Dockerfile
+├── vulnscanner.py
+├── README.md
+└── output/ (diretório para logs e relatórios, criado no host)
 ```
 
-docker run -it --rm -p 55553:55553 vulnscannerpro:prod
-```
-docker run -it --rm -p 55553:55553 vulnscannerpro:prod
-```
-Quando o script pedir, informe o alvo e a mesma senha configurada no Dockerfile.
+- vulnscanner.py: script principal em Python que orquestra a varredura e exploração.
+- Dockerfile: define o ambiente Docker com Kali Linux, Nmap, Metasploit e dependências.
+- output/: pasta onde são salvos os arquivos de log e relatório (montada via volume Docker).
